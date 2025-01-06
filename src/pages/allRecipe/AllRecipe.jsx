@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { Rating } from "@smastrom/react-rating";
+
+import "@smastrom/react-rating/style.css";
 
 const AllRecipesPage = () => {
   const [recipes, setRecipes] = useState([]);
@@ -148,11 +151,18 @@ const AllRecipesPage = () => {
             </figure>
 
             {/* Recipe Content */}
-            <div className="mt-4">
+            <div className="mt-6">
               <h3 className="text-lg font-bold">{recipe.title}</h3>
-              <p className="text-gray-600">
-                Rating: {recipe.rating || "No ratings yet"} stars
+              <p className="text-gray-600 flex items-center">
+                <span className="mr-2">Rating:</span>
+                <Rating
+                  style={{ maxWidth: 60 }}
+                  value={recipe.ratings}
+                  readOnly
+                  halfFillMode="svg"
+                />
               </p>
+
               <p className="text-sm">Serves: {recipe.servings}</p>
               <p className="text-sm">
                 Author:{" "}

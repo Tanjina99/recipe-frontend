@@ -4,13 +4,20 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { IoIosPeople } from "react-icons/io";
 import { FaRegStar } from "react-icons/fa";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
+import { Rating } from "@smastrom/react-rating";
+
+import "@smastrom/react-rating/style.css";
+import AuthProvider from "../utils/authProvider/AuthProvider";
 
 const SingleRecipe = () => {
+  const { user } = AuthProvider();
+  console.log("user from single resipe", user);
   const { id } = useParams();
   const [recipe, setRecipe] = useState(null);
   const [reviews, setReviews] = useState([]);
+  const [refresh, setRefresh] = useState(0);
   const [newReview, setNewReview] = useState({
-    name: "",
     rating: 0,
     reviewText: "",
   });
@@ -46,33 +53,42 @@ const SingleRecipe = () => {
     };
 
     fetchRecipe();
-  }, [id]);
-
-  const handleReviewChange = (e) => {
-    const { name, value } = e.target;
-    setNewReview((prev) => ({ ...prev, [name]: value }));
-  };
+  }, [id, refresh]);
 
   const handleAddReview = (e) => {
     e.preventDefault();
-    if (!newReview.name || !newReview.rating || !newReview.reviewText) {
-      alert("Please fill out all fields.");
+
+    // console.log(newReview.rating, newReview.reviewText);
+
+    if (!newReview.rating || !newReview.reviewText) {
+      toast.error("Please fill out all fields.");
       return;
     }
 
+    const reviewData = {
+      rating: newReview.rating,
+      reviewText: newReview.reviewText,
+      reviewerId: user.id,
+    };
+    console.log(reviewData);
+
     axios
-      .post(`http://localhost:3000/api/recipes/${id}/reviews`, newReview)
+      .patch(`http://localhost:3000/api/recipe/add-review/${id}`, reviewData)
       .then((response) => {
         setReviews([...reviews, response.data.review]);
-        setNewReview({ name: "", rating: 0, reviewText: "" });
-        alert("Review added!");
+
+        setNewReview({ rating: 0, reviewText: "" });
+        setRefresh((prev) => prev + 1);
+        toast.success("Review added successfully!");
       })
-      .catch((error) => console.error("Error adding review:", error));
+      .catch((error) => {
+        console.error(error);
+      });
   };
 
   const handleFavorite = () => {
     setIsFavorite(!isFavorite);
-    alert(
+    toast(
       isFavorite
         ? "Recipe removed from favorites!"
         : "Recipe added to favorites!"
@@ -186,39 +202,36 @@ const SingleRecipe = () => {
             <h2 className="text-2xl font-semibold">Reviews & Ratings</h2>
           </div>
 
-          <div className="mt-4">
-            {reviews.map((review, index) => (
-              <div key={index} className="border-b border-gray-300 pb-4 mb-4">
-                <div className="flex items-center ml-8">
-                  <p className="font-semibold">{review.reviewerName}</p>
-                  <p className="text-red-500 text-sm ml-6">
-                    {review.reviewDate &&
-                    !isNaN(new Date(review.reviewDate).getTime())
-                      ? `Date: ${new Date(review.reviewDate).toLocaleDateString(
-                          "en-US",
-                          {
-                            month: "long",
-                            day: "numeric",
-                            year: "numeric",
-                          }
-                        )}`
-                      : "Invalid Date"}
+          <div className="reviews-section">
+            {reviews && reviews.length > 0 ? (
+              reviews.map((review, index) => (
+                <div key={index} className="review-item my-4 p-4 border-b">
+                  <div className="flex items-center">
+                    <img
+                      src={review.reviewerId.photo}
+                      alt={review.reviewerId.fullName}
+                      className="w-10 h-10 rounded-full"
+                    />
+                    <p className="font-semibold ml-2">
+                      {review.reviewerId.fullName}
+                    </p>{" "}
+                    <div className="flex items-center ml-2">
+                      <Rating
+                        value={review.rating}
+                        readOnly
+                        style={{ maxWidth: 60 }}
+                      />
+                    </div>
+                  </div>
+                  <p className="text-gray-600 mt-2">{review.reviewText}</p>
+                  <p className="text-sm text-gray-400 mt-2">
+                    {new Date(review.reviewDate).toLocaleDateString()}
                   </p>
                 </div>
-                <div className="flex items-center ml-6">
-                  <p className="font-semibold">{review.name}</p>
-                  <div className="ml-2 text-yellow-500">
-                    {Array.from({ length: review.rating }, (_, i) => (
-                      <span key={i} className="text-xl">
-                        ★
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                <p className="mt-2 ml-8">{review.reviewText}</p>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p>No reviews available.</p>
+            )}
           </div>
         </div>
       </div>
@@ -231,36 +244,30 @@ const SingleRecipe = () => {
           </div>
 
           <form onSubmit={handleAddReview} className="mt-4 space-y-4">
-            <input
-              type="text"
-              name="name"
-              value={newReview.name}
-              onChange={handleReviewChange}
-              placeholder="Your Name"
-              className="w-full p-2 border rounded-md"
-            />
             <div className="flex items-center space-x-4">
               <label className="text-lg">Rating:</label>
-              <select
-                name="rating"
+              <Rating
                 value={newReview.rating}
-                onChange={handleReviewChange}
-                className="p-2 border rounded-md"
-              >
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <option key={star} value={star}>
-                    {star} {star === 1 ? "star" : "stars"}
-                  </option>
-                ))}
-              </select>
+                onChange={(value) =>
+                  setNewReview((prev) => ({ ...prev, rating: value }))
+                }
+                style={{ maxWidth: 80 }}
+                halfFillMode="box"
+              />
             </div>
+
             <textarea
               name="reviewText"
               value={newReview.reviewText}
-              onChange={handleReviewChange}
+              onChange={(e) =>
+                setNewReview((prev) => ({
+                  ...prev,
+                  reviewText: e.target.value,
+                }))
+              }
               placeholder="Your Review"
               className="w-full p-2 border rounded-md"
-              rows="4"
+              rows="3"
             />
             <button
               type="submit"

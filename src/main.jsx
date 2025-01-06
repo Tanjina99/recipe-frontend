@@ -15,6 +15,7 @@ import { Toaster } from "sonner";
 import ErrorPage from "./errorPage/ErrorPage";
 import Login from "./auth/Login";
 import Signup from "./auth/Signup";
+import AuthorRecipesPage from "./pages/authorRecipesandBlog/AuthorRecipePage";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
@@ -29,6 +30,7 @@ createRoot(document.getElementById("root")).render(
           <Route path="contact" element={<ContactUs />} />
           <Route path="single-recipe/:id" element={<SingleRecipe />} />
           <Route path="single-blog/:id" element={<SingleBlog />} />
+          <Route path="/author-recipes/:id" element={<AuthorRecipesPage />} />
         </Route>
         <Route path="login" element={<Login />} />
         <Route path="signup" element={<Signup />} />

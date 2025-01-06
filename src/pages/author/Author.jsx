@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Author = () => {
   const navigate = useNavigate();
@@ -100,12 +100,12 @@ const Author = () => {
               </h3>
               <p className="text-center text-gray-500 mt-2">{author.email}</p>
               <div className="mt-6 flex justify-center gap-2">
-                <button
-                  className="btn bg-gray-100 px-2 rounded-md shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out"
-                  onClick={() => handleAllRecipesClick(author._id)}
-                >
-                  All Recipes
-                </button>
+                <Link to={`/author-recipes/${author._id}`}>
+                  <button className="btn bg-gray-100 px-2 rounded-md shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out">
+                    All Recipes
+                  </button>
+                </Link>
+
                 <button
                   className="btn bg-gray-100 px-3 rounded-md shadow-lg hover:shadow-2xl transition-shadow duration-300 ease-in-out"
                   onClick={() => handleAllBlogsClick(author._id)}

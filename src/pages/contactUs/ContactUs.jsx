@@ -7,16 +7,15 @@ import { toast } from "sonner";
 const ContactUs = () => {
   const form = useRef();
 
-  // console.log(process.env.REACT_APP_EMAIL_SERVICE);
   const sendEmail = (e) => {
     e.preventDefault();
 
     emailjs
       .sendForm(
-        process.env.REACT_APP_EMAIL_SERVICE,
-        process.env.REACT_APP_EMAIL_TEMPLATE,
+        import.meta.env.VITE_EMAIL_SERVICE,
+        import.meta.env.VITE_EMAIL_TEMPLATE,
         form.current,
-        process.env.REACT_APP_EMAIL_PUBLIC_KEY
+        import.meta.env.VITE_EMAIL_PUBLIC_KEY
       )
       .then(
         () => {
